@@ -1,86 +1,92 @@
 import * as React from 'react';
 
-import { useFormContext } from 'react-hook-form';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Input, InputProps } from 'theme-ui';
+import * as yup from 'yup';
 
 export type GetPutObjectSignedUrl = (data: {
   key: string;
+  type: string;
 }) => Promise<string | undefined>;
 
-const S3 = React.forwardRef<
-  any,
-  {
-    name?: string;
-    keyPrefix?: string;
-    getPutObjectSignedUrl?: GetPutObjectSignedUrl;
-    t?: (key: string, params?: any) => string;
-  } & InputProps
->(
+type S3Props = {
+  getKey: (data: { name: string; filename: string }) => string;
+  getPutObjectSignedUrl: GetPutObjectSignedUrl;
+  t?: (key: string, params?: any) => string;
+} & InputProps;
+
+export interface CompoundedS3
+  extends React.ForwardRefExoticComponent<
+    S3Props & React.RefAttributes<HTMLInputElement>
+  > {
+  yup: (
+    multiple?: boolean
+  ) => yup.StringSchema | yup.ArraySchema<yup.StringSchema>;
+}
+
+const S3 = React.forwardRef<any, S3Props>(
   (
     {
-      name = '',
+      getKey,
       getPutObjectSignedUrl,
-      keyPrefix,
       t = key => key, // If t is not defined, return key only.
       ref: inputPropsRef,
       ...inputProps
     },
-    ref
+    register
   ) => {
+    const { multiple, name = '' } = inputProps;
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const { getValues, setError, setValue } = useFormContext();
-    const { multiple } = inputProps;
+    const { control, setError } = useFormContext();
+    const { append, fields, remove } = useFieldArray({ control, name });
 
-    const onChange = React.useCallback(
-      async (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files) {
-          return;
-        }
+    const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (!event.target.files) {
+        return;
+      }
 
-        if (!getPutObjectSignedUrl) {
-          setError(name, {
-            message: t('getPutObjectSignedUrl is not defined'),
-          });
-          return;
-        }
+      try {
+        await Promise.all(
+          Array.from(event.target.files).map(async file => {
+            const filename = file.name;
+            const type = file.type;
+            const key = getKey({ name, filename });
 
-        try {
-          await Promise.all(
-            Array.from(event.target.files).map(async file => {
-              const filename = file.name;
-              // const type = file.type;
-              const key = keyPrefix
-                ? [keyPrefix, filename].join('/')
-                : filename;
+            try {
+              const signedUrl = await getPutObjectSignedUrl({
+                key,
+                type,
+              });
 
-              try {
-                const signedUrl = await getPutObjectSignedUrl({
-                  key,
-                });
-
-                if (!signedUrl) {
-                  throw new Error();
-                }
-
-                await fetch(signedUrl, {
-                  method: 'PUT',
-                  body: await file.arrayBuffer(),
-                });
-
-                setValue(name, multiple ? [key, ...getValues(name)] : key);
-              } catch (err) {
-                setError(name, {
-                  message: t('Cannot upload {{filename}}', { filename }),
-                });
+              if (!signedUrl) {
+                throw new Error();
               }
-            })
-          );
-        } catch (err) {
-          setError(name, { message: t(err.message) });
-        }
-      },
-      [getPutObjectSignedUrl, keyPrefix, t, setValue, getValues]
-    );
+
+              const { status } = await fetch(signedUrl, {
+                method: 'PUT',
+                body: await file.arrayBuffer(),
+              });
+
+              if (status !== 200) {
+                throw new Error();
+              }
+
+              if (!multiple) {
+                remove();
+              }
+
+              append({ key });
+            } catch (err) {
+              setError(name, {
+                message: t('Cannot upload {{filename}}', { filename }),
+              });
+            }
+          })
+        );
+      } catch (err) {
+        setError(name, { message: t(err.message) });
+      }
+    };
 
     return (
       <>
@@ -89,11 +95,20 @@ const S3 = React.forwardRef<
           style={{ display: 'none' }}
           ref={fileInputRef}
           onChange={onChange}
-          multiple
+          multiple={multiple}
         />
+        {fields.map(({ id, key }, index) => (
+          <input
+            type="hidden"
+            key={id}
+            ref={register}
+            name={`${name}[${index}].key`}
+            defaultValue={key}
+          />
+        ))}
         <Input
           {...inputProps}
-          ref={ref}
+          ref={register}
           onClick={() => {
             fileInputRef.current?.click();
           }}
@@ -101,6 +116,18 @@ const S3 = React.forwardRef<
       </>
     );
   }
-);
+) as CompoundedS3;
+
+S3.yup = (multiple: boolean = false) =>
+  multiple
+    ? yup
+        .array()
+        .of(yup.string())
+        .transform(values => {
+          return values.map(({ key }: { key: string }) => key);
+        })
+    : yup.string().transform(values => {
+        return values[0].key;
+      });
 
 export default S3;

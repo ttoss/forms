@@ -5,14 +5,14 @@ import get from 'lodash/get';
 import { FormProvider, useFormContext, UseFormMethods } from 'react-hook-form';
 import { Box, BoxProps, Input, Label, Text } from 'theme-ui';
 
-const Form = ({
+const Form = <T,>({
   children,
   methods,
   ...boxProps
 }: {
   children?: React.ReactNode;
-  methods: UseFormMethods<any>;
-  onSubmit?: ((event: React.FormEvent<HTMLDivElement>) => void) | undefined;
+  methods: UseFormMethods<T>;
+  onSubmit?: ((data: React.FormEvent<HTMLDivElement>) => void) | undefined;
 } & BoxProps) => {
   return (
     <FormProvider {...methods}>
