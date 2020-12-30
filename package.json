@@ -36,6 +36,13 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
+  "np": {
+    "anyBranch": false,
+    "branch": "main"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "name": "@ttoss/forms",
   "author": "Pedro Arantes <arantespp@gmail.com> (https://twitter.com/arantespp)",
   "module": "dist/forms.esm.js",
