@@ -64,6 +64,9 @@ const S3 = React.forwardRef<any, S3Props>(
 
               const { status } = await fetch(signedUrl, {
                 method: 'PUT',
+                headers: {
+                  'Content-Type': type,
+                },
                 body: await file.arrayBuffer(),
               });
 
