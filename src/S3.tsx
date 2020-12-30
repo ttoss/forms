@@ -9,8 +9,10 @@ export type GetPutObjectSignedUrl = (data: {
   type: string;
 }) => Promise<string | undefined>;
 
+export type GetS3Key = (data: { name: string; filename: string }) => string;
+
 type S3Props = {
-  getKey: (data: { name: string; filename: string }) => string;
+  getS3Key: GetS3Key;
   getPutObjectSignedUrl: GetPutObjectSignedUrl;
   t?: (key: string, params?: any) => string;
 } & InputProps;
@@ -27,7 +29,7 @@ export interface CompoundedS3
 const S3 = React.forwardRef<any, S3Props>(
   (
     {
-      getKey,
+      getS3Key,
       getPutObjectSignedUrl,
       t = key => key, // If t is not defined, return key only.
       ref: inputPropsRef,
@@ -50,7 +52,7 @@ const S3 = React.forwardRef<any, S3Props>(
           Array.from(event.target.files).map(async file => {
             const filename = file.name;
             const type = file.type;
-            const key = getKey({ name, filename });
+            const key = getS3Key({ name, filename });
 
             try {
               const signedUrl = await getPutObjectSignedUrl({

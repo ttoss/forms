@@ -28,7 +28,7 @@ const Template: Story<{ onSubmit: any; multiple: boolean; schema: any }> = ({
     <Form methods={methods} onSubmit={handleSubmit(data => onSubmit(data))}>
       <Form.Field name="s3" label={JSON.stringify({ multiple })}>
         <S3
-          getKey={() => Date.now().toString()}
+          getS3Key={() => Date.now().toString()}
           getPutObjectSignedUrl={() => Promise.resolve('url')}
           multiple={multiple}
         />
