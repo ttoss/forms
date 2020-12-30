@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -39,9 +39,6 @@
   "np": {
     "anyBranch": false,
     "branch": "main"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "name": "@ttoss/forms",
   "author": "Pedro Arantes <arantespp@gmail.com> (https://twitter.com/arantespp)",
