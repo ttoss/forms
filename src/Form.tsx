@@ -76,13 +76,13 @@ const Field = ({
       {children ? (
         React.Children.map(children, child => {
           return React.createElement((child as any).type, {
-            ref: register,
+            ref: register(),
             ...commonProps,
             ...(child as any).props,
           });
         })
       ) : (
-        <Input ref={register} {...commonProps} {...inputProps} />
+        <Input ref={register()} {...commonProps} {...inputProps} />
       )}
       <ErrorMessage name={name} />
     </Box>
