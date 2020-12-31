@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Input, InputProps } from 'theme-ui';
-import * as yup from 'yup';
 
 export type GetPutObjectSignedUrl = (data: {
   key: string;
@@ -11,21 +10,19 @@ export type GetPutObjectSignedUrl = (data: {
 
 export type GetS3Key = (data: { name: string; filename: string }) => string;
 
+type S3File = {
+  key: string;
+  filename: string;
+};
+
 type S3Props = {
   getS3Key: GetS3Key;
   getPutObjectSignedUrl: GetPutObjectSignedUrl;
   renderUploadStatus?: (data: {
-    success?: string[];
-    failed?: string[];
+    success?: S3File[];
+    failed?: S3File[];
   }) => React.ReactNode;
 } & InputProps;
-
-export interface CompoundedS3
-  extends React.ForwardRefExoticComponent<
-    S3Props & React.RefAttributes<HTMLInputElement>
-  > {
-  yup: () => yup.StringSchema | yup.ArraySchema<yup.StringSchema>;
-}
 
 const S3 = React.forwardRef<any, S3Props>(
   (
@@ -40,15 +37,17 @@ const S3 = React.forwardRef<any, S3Props>(
   ) => {
     const { multiple, name = '' } = inputProps;
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const { control, setError, watch } = useFormContext();
+    const { clearErrors, control, setError, watch } = useFormContext();
     const { append, fields, remove } = useFieldArray({ control, name });
-    const [failed, setFailed] = React.useState<string[]>();
+    const [failed, setFailed] = React.useState<S3File[]>();
     const success = watch(name);
 
     const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
       if (!event.target.files) {
         return;
       }
+
+      clearErrors(name);
 
       try {
         await Promise.all(
@@ -83,9 +82,9 @@ const S3 = React.forwardRef<any, S3Props>(
                 remove();
               }
 
-              append({ key });
+              append({ key, filename });
             } catch (err) {
-              setFailed(f => [key, ...(f || [])]);
+              setFailed(f => [{ key, filename }, ...(f || [])]);
             }
           })
         );
@@ -123,14 +122,6 @@ const S3 = React.forwardRef<any, S3Props>(
       </>
     );
   }
-) as CompoundedS3;
-
-S3.yup = () =>
-  yup
-    .array()
-    .of(yup.string())
-    .transform(values => {
-      return values.map(({ key }: { key: string }) => key);
-    });
+);
 
 export default S3;

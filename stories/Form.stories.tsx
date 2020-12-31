@@ -15,8 +15,15 @@ const meta: Meta = {
 
 export default meta;
 
-const Template: Story<{ onSubmit: any; multiple: boolean; schema: any }> = ({
-  schema,
+const schema = yup.object().shape({
+  s3: yup
+    .array()
+    .of(yup.string())
+    .transform(values => values.map(({ key }) => key))
+    .required(),
+});
+
+const Template: Story<{ onSubmit: any; multiple: boolean }> = ({
   onSubmit,
   multiple,
 }) => {
@@ -41,15 +48,9 @@ const Template: Story<{ onSubmit: any; multiple: boolean; schema: any }> = ({
 export const MultipleTrue = Template.bind({});
 MultipleTrue.args = {
   multiple: true,
-  schema: yup.object().shape({
-    s3: S3.yup().required(),
-  }),
 };
 
 export const MultipleFalse = Template.bind({});
 MultipleFalse.args = {
   multiple: false,
-  schema: yup.object().shape({
-    s3: S3.yup().required(),
-  }),
 };
