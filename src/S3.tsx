@@ -14,16 +14,17 @@ export type GetS3Key = (data: { name: string; filename: string }) => string;
 type S3Props = {
   getS3Key: GetS3Key;
   getPutObjectSignedUrl: GetPutObjectSignedUrl;
-  t?: (key: string, params?: any) => string;
+  renderUploadStatus?: (data: {
+    success?: string[];
+    failed?: string[];
+  }) => React.ReactNode;
 } & InputProps;
 
 export interface CompoundedS3
   extends React.ForwardRefExoticComponent<
     S3Props & React.RefAttributes<HTMLInputElement>
   > {
-  yup: (
-    multiple?: boolean
-  ) => yup.StringSchema | yup.ArraySchema<yup.StringSchema>;
+  yup: () => yup.StringSchema | yup.ArraySchema<yup.StringSchema>;
 }
 
 const S3 = React.forwardRef<any, S3Props>(
@@ -31,7 +32,7 @@ const S3 = React.forwardRef<any, S3Props>(
     {
       getS3Key,
       getPutObjectSignedUrl,
-      t = key => key, // If t is not defined, return key only.
+      renderUploadStatus,
       ref: inputPropsRef,
       ...inputProps
     },
@@ -39,8 +40,10 @@ const S3 = React.forwardRef<any, S3Props>(
   ) => {
     const { multiple, name = '' } = inputProps;
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const { control, setError } = useFormContext();
+    const { control, setError, watch } = useFormContext();
     const { append, fields, remove } = useFieldArray({ control, name });
+    const [failed, setFailed] = React.useState<string[]>();
+    const success = watch(name);
 
     const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
       if (!event.target.files) {
@@ -82,14 +85,12 @@ const S3 = React.forwardRef<any, S3Props>(
 
               append({ key });
             } catch (err) {
-              setError(name, {
-                message: t('Cannot upload {{filename}}', { filename }),
-              });
+              setFailed(f => [key, ...(f || [])]);
             }
           })
         );
       } catch (err) {
-        setError(name, { message: t(err.message) });
+        setError(name, { message: err.message });
       }
     };
 
@@ -118,21 +119,18 @@ const S3 = React.forwardRef<any, S3Props>(
             fileInputRef.current?.click();
           }}
         />
+        {renderUploadStatus?.({ success, failed })}
       </>
     );
   }
 ) as CompoundedS3;
 
-S3.yup = (multiple: boolean = false) =>
-  multiple
-    ? yup
-        .array()
-        .of(yup.string())
-        .transform(values => {
-          return values.map(({ key }: { key: string }) => key);
-        })
-    : yup.string().transform(values => {
-        return values[0].key;
-      });
+S3.yup = () =>
+  yup
+    .array()
+    .of(yup.string())
+    .transform(values => {
+      return values.map(({ key }: { key: string }) => key);
+    });
 
 export default S3;

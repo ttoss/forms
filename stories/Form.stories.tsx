@@ -42,7 +42,7 @@ export const MultipleTrue = Template.bind({});
 MultipleTrue.args = {
   multiple: true,
   schema: yup.object().shape({
-    s3: S3.yup(true).required(),
+    s3: S3.yup().required(),
   }),
 };
 
@@ -50,6 +50,6 @@ export const MultipleFalse = Template.bind({});
 MultipleFalse.args = {
   multiple: false,
   schema: yup.object().shape({
-    s3: S3.yup(false).required(),
+    s3: S3.yup().required(),
   }),
 };
