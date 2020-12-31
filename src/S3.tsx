@@ -13,6 +13,7 @@ export type GetS3Key = (data: { name: string; filename: string }) => string;
 type S3File = {
   key: string;
   filename: string;
+  type: string;
 };
 
 type S3Props = {
@@ -56,6 +57,8 @@ const S3 = React.forwardRef<any, S3Props>(
             const type = file.type;
             const key = getS3Key({ name, filename });
 
+            const s3File = { key, filename, type };
+
             try {
               const signedUrl = await getPutObjectSignedUrl({
                 key,
@@ -82,9 +85,9 @@ const S3 = React.forwardRef<any, S3Props>(
                 remove();
               }
 
-              append({ key, filename });
+              append(s3File);
             } catch (err) {
-              setFailed(f => [{ key, filename }, ...(f || [])]);
+              setFailed(f => [s3File, ...(f || [])]);
             }
           })
         );
