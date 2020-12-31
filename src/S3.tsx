@@ -3,6 +3,8 @@ import * as React from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Input, InputProps } from 'theme-ui';
 
+import { ErrorMessage } from './Form';
+
 export type GetPutObjectSignedUrl = (data: {
   key: string;
   type: string;
@@ -105,15 +107,6 @@ const S3 = React.forwardRef<any, S3Props>(
           onChange={onChange}
           multiple={multiple}
         />
-        {fields.map(({ id, key }, index) => (
-          <input
-            type="hidden"
-            key={id}
-            ref={register}
-            name={`${name}[${index}].key`}
-            defaultValue={key}
-          />
-        ))}
         <Input
           {...inputProps}
           ref={register}
@@ -121,6 +114,33 @@ const S3 = React.forwardRef<any, S3Props>(
             fileInputRef.current?.click();
           }}
         />
+        {fields.map(({ id, key, filename, type }, index) => {
+          return (
+            <React.Fragment key={id}>
+              <input
+                type="hidden"
+                ref={register}
+                name={`${name}[${index}].key`}
+                defaultValue={key}
+              />
+              <ErrorMessage name={`${name}[${index}].key`} />
+              <input
+                type="hidden"
+                ref={register}
+                name={`${name}[${index}].filename`}
+                defaultValue={filename}
+              />
+              <ErrorMessage name={`${name}[${index}].filename`} />
+              <input
+                type="hidden"
+                ref={register}
+                name={`${name}[${index}].type`}
+                defaultValue={type}
+              />
+              <ErrorMessage name={`${name}[${index}].type`} />
+            </React.Fragment>
+          );
+        })}
         {renderUploadStatus?.({ success, failed })}
       </>
     );

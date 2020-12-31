@@ -23,7 +23,7 @@ const Form = <T,>({
   );
 };
 
-const ErrorMessage = ({ name }: { name: string }) => {
+export const ErrorMessage = ({ name }: { name: string }) => {
   const { errors } = useFormContext();
   return (
     <HookFormErrorMessage
