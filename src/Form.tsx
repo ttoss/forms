@@ -3,7 +3,7 @@ import * as React from 'react';
 import { ErrorMessage as HookFormErrorMessage } from '@hookform/error-message';
 import get from 'lodash/get';
 import { FormProvider, useFormContext, UseFormMethods } from 'react-hook-form';
-import { Box, BoxProps, Input, Label, Text } from 'theme-ui';
+import { Box, BoxProps, Input, InputProps, Label, Text } from 'theme-ui';
 
 const Form = <T,>({
   children,
@@ -55,12 +55,13 @@ const Field = ({
   name,
   children,
   label,
-  ...boxProps
+  ref: inputRef,
+  ...inputProps
 }: {
   name: string;
   children?: React.ReactNode;
   label?: string;
-} & BoxProps) => {
+} & InputProps) => {
   const { errors, register } = useFormContext();
   const error = get(errors, name);
   const commonProps = {
@@ -70,7 +71,7 @@ const Field = ({
     'aria-invalid': (error ? 'true' : 'false') as any,
   };
   return (
-    <Box variant="forms.field" {...boxProps}>
+    <Box variant="forms.field">
       {label && <Label htmlFor={name}>{label}</Label>}
       {children ? (
         React.Children.map(children, child => {
@@ -81,7 +82,7 @@ const Field = ({
           });
         })
       ) : (
-        <Input ref={register} {...commonProps} />
+        <Input ref={register} {...commonProps} {...inputProps} />
       )}
       <ErrorMessage name={name} />
     </Box>
