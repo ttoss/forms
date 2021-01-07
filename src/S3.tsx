@@ -27,14 +27,17 @@ type S3Props = {
   }) => React.ReactNode;
 } & InputProps;
 
-const S3 = React.forwardRef(
-  ({
-    getS3Key,
-    getPutObjectSignedUrl,
-    renderUploadStatus,
-    ref: inputPropsRef,
-    ...inputProps
-  }: S3Props) => {
+const S3 = React.forwardRef<any, S3Props>(
+  (
+    {
+      getS3Key,
+      getPutObjectSignedUrl,
+      renderUploadStatus,
+      ref: inputPropsRef,
+      ...inputProps
+    }: S3Props,
+    ref
+  ) => {
     const { multiple, name = '' } = inputProps;
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const {
@@ -112,7 +115,7 @@ const S3 = React.forwardRef(
         />
         <Input
           {...inputProps}
-          ref={register()}
+          ref={ref || register()}
           onClick={() => {
             fileInputRef.current?.click();
           }}
@@ -122,21 +125,21 @@ const S3 = React.forwardRef(
             <React.Fragment key={id}>
               <input
                 type="hidden"
-                ref={register()}
+                ref={ref || register()}
                 name={`${name}[${index}].key`}
                 defaultValue={key}
               />
               <ErrorMessage name={`${name}[${index}].key`} />
               <input
                 type="hidden"
-                ref={register}
+                ref={ref || register()}
                 name={`${name}[${index}].filename`}
                 defaultValue={filename}
               />
               <ErrorMessage name={`${name}[${index}].filename`} />
               <input
                 type="hidden"
-                ref={register()}
+                ref={ref || register()}
                 name={`${name}[${index}].type`}
                 defaultValue={type}
               />
