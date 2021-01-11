@@ -28,7 +28,8 @@ const Template: Story<{ onSubmit: any; multiple: boolean }> = ({
   onSubmit,
   multiple,
 }) => {
-  const methods = useForm({
+  const methods = useForm<any>({
+    defaultValues: { price: 123 },
     resolver: yupResolver(schema),
   });
   const { errors, handleSubmit } = methods;
