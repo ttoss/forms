@@ -7,6 +7,7 @@ import * as yup from 'yup';
 
 import Form from '../src/Form';
 import S3 from '../src/S3';
+import * as masks from '../src/masks/masks';
 
 const meta: Meta = {
   title: 'Form',
@@ -16,6 +17,7 @@ const meta: Meta = {
 export default meta;
 
 const schema = yup.object().shape({
+  price: yup.number(),
   s3: yup
     .array()
     .of(yup.string())
@@ -33,6 +35,11 @@ const Template: Story<{ onSubmit: any; multiple: boolean }> = ({
   const { handleSubmit } = methods;
   return (
     <Form methods={methods} onSubmit={handleSubmit(data => onSubmit(data))}>
+      <Form.Field
+        name="price"
+        label="Price"
+        onChange={masks.brlCurrencyMask.onChange}
+      />
       <Form.Field name="s3" label={JSON.stringify({ multiple })}>
         <S3
           getS3Key={() => Date.now().toString()}

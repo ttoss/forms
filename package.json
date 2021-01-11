@@ -83,6 +83,8 @@
   },
   "dependencies": {
     "@hookform/error-message": "^0.0.5",
+    "date-fns": "^2.16.1",
+    "imask": "^6.0.5",
     "lodash": "^4.17.20",
     "lodash-es": "^4.17.20"
   }
