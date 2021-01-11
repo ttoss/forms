@@ -170,10 +170,8 @@ export const brlCurrencyMask = masker({
       },
     },
   },
-  transform: (_: string, originalValue: string) => {
-    return Number(
-      brlCurrencyMask.unmask(String(originalValue)).replace(',', '.')
-    );
+  transform: (value: string) => {
+    return Number(brlCurrencyMask.unmask(value).replace(',', '.'));
   },
   maskDefault: (value: number) => {
     return brlCurrencyMask.mask(value.toFixed(2).replace('.', ','));
