@@ -17,12 +17,11 @@ const meta: Meta = {
 export default meta;
 
 const schema = yup.object().shape({
-  price: yup.number(),
+  price: yup.number().transform(masks.brlCurrencyMask.transform),
   s3: yup
     .array()
     .of(yup.string())
-    .transform(values => values.map(({ key }) => key))
-    .required(),
+    .transform(values => values.map(({ key }) => key)),
 });
 
 const Template: Story<{ onSubmit: any; multiple: boolean }> = ({
@@ -32,7 +31,7 @@ const Template: Story<{ onSubmit: any; multiple: boolean }> = ({
   const methods = useForm({
     resolver: yupResolver(schema),
   });
-  const { handleSubmit } = methods;
+  const { errors, handleSubmit } = methods;
   return (
     <Form methods={methods} onSubmit={handleSubmit(data => onSubmit(data))}>
       <Form.Field
@@ -47,6 +46,7 @@ const Template: Story<{ onSubmit: any; multiple: boolean }> = ({
           multiple={multiple}
         />
       </Form.Field>
+      <pre>{JSON.stringify(errors, null, 2)}</pre>
       <button type="submit">Submit</button>
     </Form>
   );
