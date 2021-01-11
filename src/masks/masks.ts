@@ -179,7 +179,9 @@ export const brlCurrencyMask = masker({
       return 0;
     }
   },
-  maskDefault: (value: number) => {
-    return brlCurrencyMask.mask(value.toFixed(2).replace('.', ','));
+  maskDefault: (value?: number) => {
+    return value
+      ? brlCurrencyMask.mask(value.toFixed(2).replace('.', ','))
+      : '';
   },
 });
