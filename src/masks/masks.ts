@@ -64,7 +64,7 @@ export const dateMask = masker({
       },
       yyyy: {
         mask: IMask.MaskedRange,
-        from: 1900,
+        from: 0,
         to: 9999,
       },
     },
@@ -83,10 +83,14 @@ export const dateMask = masker({
     return dateFns.format(date, dateFormatApi);
   },
   maskDefault: (value: string) => {
-    return dateFns.format(
-      dateFns.parse(value, dateFormatApi, new Date()),
-      dateFormatClient
-    );
+    try {
+      return dateFns.format(
+        dateFns.parse(value, dateFormatApi, new Date()),
+        dateFormatClient
+      );
+    } catch {
+      return undefined;
+    }
   },
 });
 
